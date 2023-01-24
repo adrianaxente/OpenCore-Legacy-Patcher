@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import os
 from pathlib import Path
-from resources import utilities, constants, tui_helpers
+from resources import post_install, utilities, constants, tui_helpers
 from data import os_data
 
 class tui_disk_installation:
@@ -241,6 +241,8 @@ Please build OpenCore first!"""
             else:
                 print("- Adding Internal Drive icon")
                 shutil.copy(self.constants.icon_path_internal, mount_path)
+
+            post_install.tui_post_installation(mount_path, self.constants).post_install()
 
             print("- Cleaning install location")
             if not self.constants.recovery_status:

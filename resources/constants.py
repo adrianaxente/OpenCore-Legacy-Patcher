@@ -681,3 +681,9 @@ class Constants:
         "Mac-94245AF5819B141B",  # AppleInternal MacBookPro8,3
         "Mac-942B5B3A40C91381",  # AppleInternal iMac12,2
     ]
+
+    known_boot_loader_efi_file_patterns = [
+        { "Name": "Generic Grub2", "Pattern": "**/grubx64.efi"},             # grub2 bootloader
+        { "Name": "Generic systemd", "Pattern": "**/systemd-bootx64.efi"},   # systemd bootloader
+        { "Name": "Windows", "Pattern": "Microsoft/Boot/bootmgfw.efi" }      # Windows bootloader
+    ]
