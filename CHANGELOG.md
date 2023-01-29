@@ -1,5 +1,15 @@
 # OpenCore Legacy Patcher changelog
 
+## 0.6.2
+- Work around Black Box rendering issues on certain Display Color Profiles
+  - Limited to Ventura currently due to limitations with other color profiles
+  - Applicable for HD3000-based machines (ex. MacBookAir4,x, MacBookPro8,x, Macmini5,x)
+- Ensure `Moraea_BlurBeta` is set on non-Metal systems
+- Implement proper Root Unpatching verification in GUI
+  - Removes arbitrary patch requirements used against unpatching (ex. network connection)
+- Increment Binaries:
+  - PatcherSupportPkg 0.8.3 - release
+
 ## 0.6.1
 - Avoid usage of KDKlessWorkaround on hardware not requiring it
   - Resolves AMD Graphics Regression from 0.5.3
