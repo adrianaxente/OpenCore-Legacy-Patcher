@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import os
 from pathlib import Path
-from resources import post_install, utilities, constants, tui_helpers
+from resources import utilities, constants, tui_helpers
 from data import os_data
 
 class tui_disk_installation:
@@ -148,17 +148,16 @@ Please build OpenCore first!"""
                 return True
             return False
 
-        # TODO: Apple Script fails in Yosemite(?) and older
-        args = [
-            "osascript",
-            "-e",
-            f'''do shell script "diskutil mount {full_disk_identifier}"'''
-            ' with prompt "OpenCore Legacy Patcher needs administrator privileges to mount your EFI."'
-            " with administrator privileges"
-            " without altering line endings",
-        ]
-
         if self.constants.detected_os >= os_data.os_data.el_capitan and not self.constants.recovery_status:
+            # TODO: Apple Script fails in Yosemite(?) and older
+            args = [
+                "osascript",
+                "-e",
+                f'''do shell script "diskutil mount {full_disk_identifier}"'''
+                ' with prompt "OpenCore Legacy Patcher needs administrator privileges to mount your EFI."'
+                " with administrator privileges"
+                " without altering line endings",
+            ]
             result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
             result = subprocess.run(f"diskutil mount {full_disk_identifier}".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -241,8 +240,6 @@ Please build OpenCore first!"""
             else:
                 print("- Adding Internal Drive icon")
                 shutil.copy(self.constants.icon_path_internal, mount_path)
-
-            post_install.tui_post_installation(mount_path, self.constants).post_install()
 
             print("- Cleaning install location")
             if not self.constants.recovery_status:

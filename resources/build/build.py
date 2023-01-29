@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import date
 
 from resources import constants, utilities
-from resources.build import bluetooth, firmware, graphics_audio, support, storage, smbios, security, misc
+from resources.build import bluetooth, firmware, graphics_audio, support, storage, smbios, security, misc, boot
 from resources.build.networking import wired, wireless
 
 
@@ -54,8 +54,10 @@ class build_opencore:
 
         # Work-around ocvalidate
         if self.constants.validate is False:
-            print("- Adding bootmgfw.efi BlessOverride")
-            self.config["Misc"]["BlessOverride"] += ["\\EFI\\Microsoft\\Boot\\bootmgfw.efi"]
+            # TODO: Delete the following commented code after testing on boot.build_boot on older OsX versions than Ventura
+            # print("- Adding bootmgfw.efi BlessOverride")
+            # self.config["Misc"]["BlessOverride"] += ["\\EFI\\Microsoft\\Boot\\bootmgfw.efi"]
+            boot.build_boot(self.model, self.constants, self.config).build()
 
 
     def generate_base(self):

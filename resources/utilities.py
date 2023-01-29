@@ -73,13 +73,19 @@ def check_recovery():
 
     return RECOVERY_STATUS
 
-
+# TODO: move this to a dedicated disk utilities file
 def get_disk_path():
     root_partition_info = plistlib.loads(subprocess.run("diskutil info -plist /".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
     root_mount_path = root_partition_info["DeviceIdentifier"]
     root_mount_path = root_mount_path[:-2] if root_mount_path.count("s") > 1 else root_mount_path
     return root_mount_path
 
+# TODO: move this to a dedicated disk utilities file
+def get_physical_disk_path():
+    macOS_disk = get_disk_path()
+    return next(iter(find_apfs_physical_volume(macOS_disk)))
+
+# TODO: move this to a dedicated disk utilities file
 def check_if_root_is_apfs_snapshot():
     root_partition_info = plistlib.loads(subprocess.run("diskutil info -plist /".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
     try:
@@ -88,6 +94,82 @@ def check_if_root_is_apfs_snapshot():
         is_snapshotted = False
     return is_snapshotted
 
+# TODO: move this to a dedicated disk utilities file
+# TODO: create a strong type and use it as result of this function 
+def get_all_disks():
+    # TODO: AllDisksAndPartitions is not supported in Snow Leopard and older
+    try:
+        # High Sierra and newer
+        disks = plistlib.loads(subprocess.run("diskutil list -plist physical".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
+    except ValueError:
+        # Sierra and older
+        disks = plistlib.loads(subprocess.run("diskutil list -plist".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
+    for disk in disks["AllDisksAndPartitions"]:
+        try:
+            yield {
+                "device_identifier": disk["DeviceIdentifier"],
+                **get_disk_info(disk["DeviceIdentifier"]),
+                "partitions": ({
+                    **get_partition_info(partition['DeviceIdentifier'])
+                } for partition in disk["Partitions"])
+            }
+        except KeyError:
+            # Avoid crashing with CDs installed
+            continue
+
+# TODO: move this to a dedicated disk utilities file
+# TODO: create a strong type and use it as result of this function 
+def get_disk_info(device_identifier):
+    disk_info = plistlib.loads(subprocess.run(f"diskutil info -plist {device_identifier}".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
+    return {
+        "identifier": disk_info["DeviceNode"],
+        "name": disk_info["MediaName"],
+        "size": disk_info["TotalSize"],
+        "ejectable": disk_info["Ejectable"],
+        "internal": disk_info["Internal"],
+        "removable": disk_info["Removable"],
+        "virtual_or_physical": disk_info["VirtualOrPhysical"],
+        "whole_disk": disk_info["WholeDisk"]
+    }
+
+# TODO: move this to a dedicated disk utilities file
+# TODO: create a strong type and use it as result of this function 
+def get_partition_info(device_identifier):
+    partition_info = plistlib.loads(subprocess.run(f"diskutil info -plist {device_identifier}".split(), stdout=subprocess.PIPE).stdout.decode().strip().encode())
+    return {
+        "device_identifier": device_identifier,
+        "name": partition_info.get("VolumeName", ""),
+        "size": partition_info["TotalSize"],
+        "fs": partition_info.get("FilesystemType", partition_info["Content"]),
+        "type": partition_info["Content"],
+        "mount_point": Path(partition_info["MountPoint"]) if partition_info["MountPoint"] else None
+    }
+
+# TODO: move this to a dedicated disk utilities file
+def mount_device(device_identifier, constants):
+    if constants.detected_os >= os_data.os_data.el_capitan and not constants.recovery_status:
+        # TODO: Apple Script fails in Yosemite(?) and older
+        args = [
+            "osascript",
+            "-e",
+            f'''do shell script "diskutil mount {device_identifier}"'''
+            f' with prompt "OpenCore Legacy Patcher needs administrator privileges to mount {device_identifier}."'
+            " with administrator privileges"
+            " without altering line endings",
+        ]
+        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        result = subprocess.run(f"diskutil mount {device_identifier}".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # if result.returncode != 0:
+    #     if "execution error" in result.stderr.decode() and result.stderr.decode().strip()[-5:-1] == "-128":
+    #         raise Exception()
+
+    return result
+
+# TODO: move this to a dedicated disk utilities file
+def unmount_device(mount_point):
+    return subprocess.run(["diskutil", "umount", mount_point], stdout=subprocess.PIPE).stdout.decode().strip().encode()
 
 def check_seal():
     # 'Snapshot Sealed' property is only listed on booted snapshots
@@ -97,6 +179,8 @@ def check_seal():
     else:
         return False
 
+# TODO: move this to a dedicated disk utilities file
+# TODO: Refactor all the usages of this function and use get_partition_info instead 
 def check_filesystem_type():
     # Expected to return 'apfs' or 'hfs'
     filesystem_type = plistlib.loads(subprocess.run(["diskutil", "info", "-plist", "/"], stdout=subprocess.PIPE).stdout.decode().strip().encode())
