@@ -7,8 +7,33 @@
 - Ensure `Moraea_BlurBeta` is set on non-Metal systems
 - Implement proper Root Unpatching verification in GUI
   - Removes arbitrary patch requirements used against unpatching (ex. network connection)
+- Implement Kernel Debug Kit installation during OS installs
+  - Avoids network requirement for first time installs
+  - Paired along side AutoPkgInstaller
+- Backend Changes:
+  - Refactored kdk_handler.py
+    - Prioritizes KdkSupportPkg repository for downloads
+      - Skips calls to Apple's now defunct Developer Portal API
+    - Support local loose matching when no network connection is available
+  - Implemented logging framework usage for more reliable logging
+    - Logs are stored under `~/OpenCore-Patcher.log`
+    - Subsequent runs are appended to the log, allowing for easy debugging
+  - Implemented new network_handler.py module
+    - Allows for more reliable network calls and downloads
+    - Better supports network timeouts and disconnects
+    - Dramatically less noise in console during downloads
+  - Removed unused sys_patch_downloader.py module
+- Build Server Changes:
+  - Upgrade Python backend to 3.10.9
+  - Upgrade Python modules:
+    - requests - 2.28.2
+    - pyobjc - 9.0.1
+    - wxpython - 4.2.0
+    - pyinstaller - 5.7.0
+    - packaging - 23.0
 - Increment Binaries:
   - PatcherSupportPkg 0.8.3 - release
+  - AutoPkgInstaller 1.0.2 - release
 
 ## 0.6.1
 - Avoid usage of KDKlessWorkaround on hardware not requiring it
