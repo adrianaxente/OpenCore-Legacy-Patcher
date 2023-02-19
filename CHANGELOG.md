@@ -10,11 +10,14 @@
 - Implement Kernel Debug Kit installation during OS installs
   - Avoids network requirement for first time installs
   - Paired along side AutoPkgInstaller
+- Implement Kernel Debug Kit backup system
+  - Allows for easy restoration of KDKs if OS updates corrupted installed KDKs
 - Backend Changes:
   - Refactored kdk_handler.py
     - Prioritizes KdkSupportPkg repository for downloads
       - Skips calls to Apple's now defunct Developer Portal API
     - Support local loose matching when no network connection is available
+    - Implement pkg receipt verification to validate integrity of KDKs
   - Implemented logging framework usage for more reliable logging
     - Logs are stored under `~/OpenCore-Patcher.log`
     - Subsequent runs are appended to the log, allowing for easy debugging
@@ -22,7 +25,10 @@
     - Allows for more reliable network calls and downloads
     - Better supports network timeouts and disconnects
     - Dramatically less noise in console during downloads
-  - Removed unused sys_patch_downloader.py module
+  - Removed unused modules:
+    - sys_patch_downloader.py
+    - run.py
+    - TUI modules
 - Build Server Changes:
   - Upgrade Python backend to 3.10.9
   - Upgrade Python modules:
