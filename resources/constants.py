@@ -684,7 +684,8 @@ class Constants:
 
     # TODO: Add additional bootloader patterns like ones for BSDs, etc...
     known_boot_loader_efi_file_patterns = [
-        { "Name": "Generic Grub2", "Pattern": "**/grubx64.efi"},             # grub2 bootloader
-        { "Name": "Generic systemd", "Pattern": "**/systemd-bootx64.efi"},   # systemd bootloader
+        { "Name": "Generic BSD", "Pattern": "**/loader.efi" },               # generic BSD booloader
+        { "Name": "Generic Grub2", "Pattern": "**/grubx64.efi" },            # grub2 bootloader
+        { "Name": "Generic systemd", "Pattern": "**/systemd-bootx64.efi" },  # systemd bootloader
         { "Name": "Windows", "Pattern": "Microsoft/Boot/bootmgfw.efi" }      # Windows bootloader
     ]
